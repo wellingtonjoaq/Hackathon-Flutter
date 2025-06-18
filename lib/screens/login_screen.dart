@@ -35,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
 
-    // Aqui você pode navegar para a tela inicial se o login for bem-sucedido
   }
 
   @override

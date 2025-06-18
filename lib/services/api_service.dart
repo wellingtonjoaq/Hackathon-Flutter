@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://seu-backend-api.com/api'; // Mude para sua URL
+  static const String baseUrl = 'http://seu-backend-api.com/api';
 
   Future<bool> login(String username, String password) async {
     final url = Uri.parse('$baseUrl/login');
@@ -14,7 +14,7 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        // Aqui você pode salvar o token, dados do usuário, etc.
+
         return true;
       }
       return false;
