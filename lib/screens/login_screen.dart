@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets//usuarios_page.dart';
+import '../widgets/users.dart'; // 👈 Import da nova tela
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,13 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(success ? 'Login efetuado com sucesso!' : 'Falha no login. Verifique as credenciais.'),
-        backgroundColor: success ? Colors.green : Colors.red,
-      ),
-    );
-
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => UsuariosPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Falha no login. Verifique as credenciais.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -61,14 +69,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _usernameController,
                       decoration: _inputDecoration('Usuário', Icons.person),
-                      validator: (value) => value == null || value.isEmpty ? 'Informe o usuário' : null,
+                      validator: (value) =>
+                      value == null || value.isEmpty ? 'Informe o usuário' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
                       decoration: _inputDecoration('Senha', Icons.lock),
                       obscureText: true,
-                      validator: (value) => value == null || value.isEmpty ? 'Informe a senha' : null,
+                      validator: (value) =>
+                      value == null || value.isEmpty ? 'Informe a senha' : null,
                     ),
                     const SizedBox(height: 30),
                     _isLoading
