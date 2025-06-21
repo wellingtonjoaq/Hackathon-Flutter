@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'screens/login_screen.dart';  // <-- aqui, 'telas' ao invés de 'screens'
 
 void main() {
   runApp(const MyApp());

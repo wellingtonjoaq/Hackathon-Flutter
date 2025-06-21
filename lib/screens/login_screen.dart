@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import '../widgets//usuarios_page.dart';
-import '../widgets/users.dart'; // 👈 Import da nova tela
+import '../models/usuario_dto.dart';
+import 'home_screen.dart';  // importe sua tela Home aqui
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,27 +18,52 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
 
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
-    final username = _usernameController.text;
+    final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
-    final success = await _apiService.login(username, password);
+    try {
+      final UsuarioDTO? usuario = await _apiService.login(username, password);
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (success) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => UsuariosPage()),
-      );
-    } else {
+      if (usuario != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login efetuado com sucesso! Bem-vindo, ${usuario.nome}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navegue para a próxima tela, exemplo:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomeScreen(usuario: usuario)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Falha no login. Verifique as credenciais.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Falha no login. Verifique as credenciais.'),
+        SnackBar(
+          content: Text('Erro inesperado ao tentar logar: $e'),
           backgroundColor: Colors.red,
         ),
       );
