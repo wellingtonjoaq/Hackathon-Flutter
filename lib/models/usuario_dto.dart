@@ -21,4 +21,13 @@ class UsuarioDTO {
       perfil: json['perfil'] != null ? json['perfil'].toString() : '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nome': nome,
+      'email': email,
+      'perfil': perfil,
+    };
+  }
 }

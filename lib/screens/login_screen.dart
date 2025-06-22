@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/usuario_dto.dart';
-import 'home_screen.dart';  // importe sua tela Home aqui
+import '../services/local_storage_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  final FocusNode _passwordFocus = FocusNode();
+
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
 
@@ -22,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -31,14 +34,14 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     final username = _usernameController.text.trim();
-    final password = _passwordController.text;
+    final password = _passwordController.text.trim();
 
     try {
       final UsuarioDTO? usuario = await _apiService.login(username, password);
 
-      setState(() => _isLoading = false);
-
       if (usuario != null) {
+        await LocalStorageService().salvarUsuario(usuario);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Login efetuado com sucesso! Bem-vindo, ${usuario.nome}'),
@@ -46,11 +49,26 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         );
 
-        // Navegue para a próxima tela, exemplo:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomeScreen(usuario: usuario)),
-        );
+        switch (usuario.perfil.toUpperCase()) {
+          case 'ADMINISTRADOR':
+            Navigator.pushReplacementNamed(context, '/admin', arguments: usuario);
+            break;
+          case 'PROFESSOR':
+            Navigator.pushReplacementNamed(context, '/professor', arguments: usuario);
+            break;
+          case 'ALUNO':
+            Navigator.pushReplacementNamed(context, '/aluno', arguments: usuario);
+            break;
+          default:
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Perfil de usuário não reconhecido.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            setState(() => _isLoading = false);
+            break;
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -58,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.red,
           ),
         );
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -68,6 +87,11 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  void _limparCampos() {
+    _usernameController.clear();
+    _passwordController.clear();
   }
 
   @override
@@ -94,12 +118,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _usernameController,
                       decoration: _inputDecoration('Usuário', Icons.person),
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).requestFocus(_passwordFocus),
                       validator: (value) =>
                       value == null || value.isEmpty ? 'Informe o usuário' : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
+                      focusNode: _passwordFocus,
                       decoration: _inputDecoration('Senha', Icons.lock),
                       obscureText: true,
                       validator: (value) =>
@@ -108,19 +136,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 30),
                     _isLoading
                         ? const CircularProgressIndicator()
-                        : SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        : Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _submit,
+                            child: const Text(
+                              'Entrar',
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
-                        onPressed: _submit,
-                        child: const Text('Entrar', style: TextStyle(fontSize: 16)),
-                      ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: _limparCampos,
+                          child: const Text('Limpar campos'),
+                        )
+                      ],
                     ),
                   ],
                 ),
