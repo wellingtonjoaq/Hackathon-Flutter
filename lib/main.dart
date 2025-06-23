@@ -5,6 +5,9 @@ import 'screens/login_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/professor_screen.dart';
 import 'screens/aluno_screen.dart';
+import 'screens/adicionarProva_screen.dart';
+import 'screens/corrigirProva_screen.dart';  // importe essas telas (crie mesmo que vazias)
+import 'screens/resultados_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +26,6 @@ class MyApp extends StatelessWidget {
     return FutureBuilder<UsuarioDTO?>(
       future: _getUsuario(),
       builder: (context, snapshot) {
-        // Mostrar loading apenas enquanto estiver carregando
         if (snapshot.connectionState != ConnectionState.done) {
           return const MaterialApp(
             home: Scaffold(
@@ -33,14 +35,11 @@ class MyApp extends StatelessWidget {
         }
 
         final usuario = snapshot.data;
-
         Widget homeWidget;
 
         if (usuario == null) {
-          // Usuário não está logado, mostrar tela de login
           homeWidget = const LoginScreen();
         } else {
-          // Redirecionar conforme perfil
           switch (usuario.perfil.toUpperCase()) {
             case 'ADMINISTRADOR':
               homeWidget = AdminScreen(usuario: usuario);
@@ -53,7 +52,6 @@ class MyApp extends StatelessWidget {
               break;
             default:
               homeWidget = const LoginScreen();
-              break;
           }
         }
 
@@ -62,9 +60,15 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(primarySwatch: Colors.blue),
           debugShowCheckedModeBanner: false,
           home: homeWidget,
+
+          // Rotas simples que não precisam de argumentos
           routes: {
             '/login': (_) => const LoginScreen(),
+            '/adicionarProva': (_) => const AdicionarProvaScreen(),
+            // NÃO coloque aqui CorrigirProvaScreen e ResultadosScreen, pois precisam do usuário
           },
+
+          // Rotas com argumentos
           onGenerateRoute: (settings) {
             final args = settings.arguments;
             switch (settings.name) {
@@ -83,7 +87,18 @@ class MyApp extends StatelessWidget {
                   return MaterialPageRoute(builder: (_) => AlunoScreen(usuario: args));
                 }
                 break;
+              case '/corrigirProva':
+                if (args is UsuarioDTO) {
+                  return MaterialPageRoute(builder: (_) => CorrigirProvaScreen(usuario: args));
+                }
+                break;
+              case '/resultados':
+                if (args is UsuarioDTO) {
+                  return MaterialPageRoute(builder: (_) => ResultadosScreen(usuario: args));
+                }
+                break;
             }
+            // Rota padrão
             return MaterialPageRoute(builder: (_) => const LoginScreen());
           },
         );

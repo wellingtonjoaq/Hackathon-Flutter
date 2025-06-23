@@ -3,9 +3,9 @@ import '../models/usuario_dto.dart';
 import '../services/local_storage_service.dart';
 
 class ProfessorScreen extends StatelessWidget {
-  final UsuarioDTO usuario; // campo para guardar o usuário
+  final UsuarioDTO usuario;
 
-  const ProfessorScreen({super.key, required this.usuario}); // atribuir no construtor
+  const ProfessorScreen({super.key, required this.usuario});
 
   @override
   Widget build(BuildContext context) {
@@ -18,19 +18,57 @@ class ProfessorScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await LocalStorageService().limparUsuario();
-              Navigator.pushReplacementNamed(context, '/login'); // usar rota login para sair
+              Navigator.pushReplacementNamed(context, '/login');
             },
             tooltip: 'Logout',
-          )
+          ),
         ],
       ),
-      body: Center(
-        child: Text(
-          'Bem-vindo, ${usuario.nome} (Professor)',
-          style: const TextStyle(fontSize: 18),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Bem-vindo, ${usuario.nome} (Professor)',
+              style: const TextStyle(fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+
+            // Botão para Adicionar Prova
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Adicionar Prova'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/adicionarProva');
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Botão para Corrigir Provas
+            ElevatedButton.icon(
+              icon: const Icon(Icons.edit),
+              label: const Text('Corrigir Prova'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/corrigirProva');
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            // Botão para Ver Resultados
+            ElevatedButton.icon(
+              icon: const Icon(Icons.bar_chart),
+              label: const Text('Ver Resultados'),
+              onPressed: () {
+                Navigator.pushNamed(context, '/resultados');
+              },
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
