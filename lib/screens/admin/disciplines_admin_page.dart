@@ -1,87 +1,81 @@
-// lib/screens/admin/classes_admin_page.dart
 import 'package:flutter/material.dart';
-import 'package:hackathon_flutter/widgets/admin_object_form_screen.dart';
-import '../models/turma_dto.dart';
-import '../services/api_service.dart';
+import '../../../models/disciplina_dto.dart';
+import '../../../models/usuario_dto.dart';
+import '../../../services/api_service.dart';
+import 'admin_object_form_screen.dart';
 
-class ClassesAdminPage extends StatefulWidget {
-  const ClassesAdminPage({super.key});
+class DisciplinesAdminPage extends StatefulWidget {
+  const DisciplinesAdminPage({super.key});
 
   @override
-  State<ClassesAdminPage> createState() => _ClassesAdminPageState();
+  State<DisciplinesAdminPage> createState() => _DisciplinesAdminPageState();
 }
 
-class _ClassesAdminPageState extends State<ClassesAdminPage> {
-  late Future<List<TurmaDTO>> _classesFuture;
+class _DisciplinesAdminPageState extends State<DisciplinesAdminPage> {
+  late Future<List<DisciplinaDTO>> _disciplinesFuture;
   final ApiService _apiService = ApiService();
 
   final TextEditingController _nameFilterController = TextEditingController();
-  String? _selectedPeriodoFilter;
-  String? _selectedCursoFilter;
-  List<String> _periodos = [];
-  List<String> _cursos = [];
-  bool _isLoadingFilters = true;
+  String? _selectedProfessorFilter;
+  List<UsuarioDTO> _professors = [];
+  bool _isLoadingProfessors = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchFilterOptions();
-    _fetchClasses();
+    _fetchProfessors();
+    _fetchDisciplines();
   }
 
-  void _fetchFilterOptions() async {
+  void _fetchProfessors() async {
     try {
-      final fetchedPeriodos = await _apiService.fetchPeriodosUnicos();
-      final fetchedCursos = await _apiService.fetchCursosUnicos();
+      final allUsers = await _apiService.fetchUsuarios();
       setState(() {
-        _periodos = fetchedPeriodos;
-        _cursos = fetchedCursos;
-        _isLoadingFilters = false;
+        _professors = allUsers.where((u) => u.perfil == 'PROFESSOR').toList();
+        _isLoadingProfessors = false;
       });
     } catch (e) {
       setState(() {
-        _isLoadingFilters = false;
+        _isLoadingProfessors = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar opções de filtro: $e')),
+        SnackBar(content: Text('Erro ao carregar professores para filtro: $e')),
       );
     }
   }
 
-  void _fetchClasses() {
+  void _fetchDisciplines() {
     setState(() {
-      _classesFuture = _apiService.fetchTurmasAdmin(
+      _disciplinesFuture = _apiService.fetchDisciplinas(
         nome: _nameFilterController.text.isNotEmpty ? _nameFilterController.text : null,
-        periodo: _selectedPeriodoFilter,
-        curso: _selectedCursoFilter,
+        professorNome: _selectedProfessorFilter,
       );
     });
   }
 
-  void _showAddEditClassScreen({TurmaDTO? classObject}) async {
+  void _showAddEditDisciplineScreen({DisciplinaDTO? discipline}) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AdminObjectFormScreen(
-          objectType: AdminFormObjectType.class_,
-          initialObject: classObject,
+          objectType: AdminFormObjectType.discipline,
+          initialObject: discipline,
         ),
       ),
     );
 
     if (result == true) {
-      _fetchFilterOptions();
-      _fetchClasses();
+      _fetchDisciplines();
     }
   }
 
-  Future<void> _confirmDelete(TurmaDTO classObject) async {
+  Future<void> _confirmDelete(DisciplinaDTO discipline) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmar Exclusão'),
-          content: Text('Tem certeza que deseja excluir a turma "${classObject.nome}"?'),
+          content: Text('Tem certeza que deseja excluir a disciplina "${discipline.nome}"?'),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -98,15 +92,14 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
 
     if (confirm == true) {
       try {
-        await _apiService.deleteTurma(classObject.id!);
-        _fetchFilterOptions();
-        _fetchClasses();
+        await _apiService.deleteDisciplina(discipline.id!);
+        _fetchDisciplines();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Turma "${classObject.nome}" excluída com sucesso!')),
+          SnackBar(content: Text('Disciplina "${discipline.nome}" excluída com sucesso!')),
         );
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir turma: $e')),
+          SnackBar(content: Text('Erro ao excluir disciplina: $e')),
         );
       }
     }
@@ -116,8 +109,8 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEditClassScreen(),
-        label: const Text('Adicionar Turma'),
+        onPressed: () => _showAddEditDisciplineScreen(),
+        label: const Text('Adicionar Disciplina'),
         icon: const Icon(Icons.add),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
@@ -127,7 +120,6 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Formulário de filtro
             Card(
               elevation: 2,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -139,21 +131,21 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                     TextFormField(
                       controller: _nameFilterController,
                       decoration: InputDecoration(
-                        labelText: 'Nome da Turma',
+                        labelText: 'Nome da Disciplina',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
                         fillColor: Colors.grey[50],
                       ),
-                      onFieldSubmitted: (_) => _fetchClasses(),
+                      onFieldSubmitted: (_) => _fetchDisciplines(),
                     ),
                     const SizedBox(height: 15),
-                    _isLoadingFilters
+                    _isLoadingProfessors
                         ? const Center(child: CircularProgressIndicator())
                         : DropdownButtonFormField<String>(
-                      value: _selectedPeriodoFilter,
+                      value: _selectedProfessorFilter,
                       decoration: InputDecoration(
-                        labelText: 'Período',
+                        labelText: 'Professor',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         filled: true,
                         fillColor: Colors.grey[50],
@@ -161,49 +153,22 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                       items: [
                         const DropdownMenuItem<String>(
                           value: null,
-                          child: Text('Todos os Períodos'),
+                          child: Text('Todos os Professores'),
                         ),
-                        ..._periodos.map((p) => DropdownMenuItem<String>(
-                          value: p,
-                          child: Text(p),
+                        ..._professors.map((prof) => DropdownMenuItem<String>(
+                          value: prof.nome,
+                          child: Text(prof.nome),
                         ))
                       ],
                       onChanged: (String? newValue) {
                         setState(() {
-                          _selectedPeriodoFilter = newValue;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                    _isLoadingFilters
-                        ? const Center(child: CircularProgressIndicator())
-                        : DropdownButtonFormField<String>(
-                      value: _selectedCursoFilter,
-                      decoration: InputDecoration(
-                        labelText: 'Curso',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(
-                          value: null,
-                          child: Text('Todos os Cursos'),
-                        ),
-                        ..._cursos.map((c) => DropdownMenuItem<String>(
-                          value: c,
-                          child: Text(c),
-                        ))
-                      ],
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCursoFilter = newValue;
+                          _selectedProfessorFilter = newValue;
                         });
                       },
                     ),
                     const SizedBox(height: 15),
                     ElevatedButton.icon(
-                      onPressed: _fetchClasses,
+                      onPressed: _fetchDisciplines,
                       icon: const Icon(Icons.filter_list),
                       label: const Text('Filtrar'),
                       style: ElevatedButton.styleFrom(
@@ -220,8 +185,8 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
               ),
             ),
             Expanded(
-              child: FutureBuilder<List<TurmaDTO>>(
-                future: _classesFuture,
+              child: FutureBuilder<List<DisciplinaDTO>>(
+                future: _disciplinesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator(color: Colors.indigo));
@@ -230,7 +195,7 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: Text(
-                          'Erro ao carregar turmas: ${snapshot.error}',
+                          'Erro ao carregar disciplinas: ${snapshot.error}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(color: Colors.redAccent, fontSize: 16),
                         ),
@@ -238,12 +203,12 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                     );
                   }
 
-                  final classes = snapshot.data ?? [];
+                  final disciplines = snapshot.data ?? [];
 
-                  if (classes.isEmpty) {
+                  if (disciplines.isEmpty) {
                     return const Center(
                       child: Text(
-                        'Nenhuma turma encontrada.',
+                        'Nenhuma disciplina encontrada.',
                         style: TextStyle(color: Colors.grey, fontSize: 18),
                       ),
                     );
@@ -268,27 +233,25 @@ class _ClassesAdminPageState extends State<ClassesAdminPage> {
                           columns: const [
                             DataColumn(label: Text('ID', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
                             DataColumn(label: Text('Nome', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
-                            DataColumn(label: Text('Período', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
-                            DataColumn(label: Text('Curso', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
+                            DataColumn(label: Text('Professor', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
                             DataColumn(label: Text('Ações', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo))),
                           ],
-                          rows: classes.map((classObject) {
+                          rows: disciplines.map((discipline) {
                             return DataRow(cells: [
-                              DataCell(Text(classObject.id?.toString() ?? '-')),
-                              DataCell(Text(classObject.nome)),
-                              DataCell(Text(classObject.periodo)),
-                              DataCell(Text(classObject.curso)),
+                              DataCell(Text(discipline.id?.toString() ?? '-')),
+                              DataCell(Text(discipline.nome)),
+                              DataCell(Text(discipline.nomeProfessor ?? 'N/A')),
                               DataCell(Row(
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                                    onPressed: () => _showAddEditClassScreen(classObject: classObject),
-                                    tooltip: 'Editar Turma',
+                                    onPressed: () => _showAddEditDisciplineScreen(discipline: discipline),
+                                    tooltip: 'Editar Disciplina',
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete, color: Colors.redAccent),
-                                    onPressed: () => _confirmDelete(classObject),
-                                    tooltip: 'Excluir Turma',
+                                    onPressed: () => _confirmDelete(discipline),
+                                    tooltip: 'Excluir Disciplina',
                                   ),
                                 ],
                               )),

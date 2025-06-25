@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hackathon_flutter/screens/admin/admin_screen.dart';
 import 'package:hackathon_flutter/screens/aluno/aluno_feedbacks_screen.dart';
+import 'package:hackathon_flutter/screens/professor/provas_professor_page.dart';
 import 'services/local_storage_service.dart';
 import 'models/usuario_dto.dart';
-import 'screens/login_screen.dart';
-import 'screens/professor_screen.dart';
+import 'screens/login/login_screen.dart';
 import 'screens/aluno/aluno_screen.dart';
-import 'screens/corrigirProva_screen.dart';
-import 'screens/resultados_screen.dart';
+import 'screens/professor/resultados_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,7 +45,7 @@ class MyApp extends StatelessWidget {
 
               break;
             case 'PROFESSOR':
-              homeWidget = ProfessorScreen(usuario: usuario);
+              homeWidget = ProvasProfessorPage(usuario: usuario);
               break;
             case 'ALUNO':
               homeWidget = AlunoScreen(usuario: usuario);
@@ -75,7 +74,7 @@ class MyApp extends StatelessWidget {
             case '/professor':
               if (args is UsuarioDTO) {
                 return MaterialPageRoute(
-                    builder: (_) => ProfessorScreen(usuario: args));
+                    builder: (_) => ProvasProfessorPage(usuario: args));
               }
               break;
             case '/aluno':
@@ -90,16 +89,16 @@ class MyApp extends StatelessWidget {
                     builder: (_) => AlunoFeedbacksScreen(usuario: args));
               }
               break;
-            case '/corrigirProva':
-              if (args is UsuarioDTO) {
-                return MaterialPageRoute(
-                    builder: (_) => CorrigirProvaScreen(usuario: args));
-              }
-              break;
             case '/resultados':
               if (args is UsuarioDTO) {
                 return MaterialPageRoute(
                     builder: (_) => ResultadosScreen(usuario: args));
+              }
+              break;
+              case '/professor/proofessor':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => ProvasProfessorPage(usuario: args));
               }
               break;
           }

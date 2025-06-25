@@ -1,9 +1,9 @@
 // lib/screens/admin/admin_object_form_screen.dart
 import 'package:flutter/material.dart';
-import '../../models/usuario_dto.dart';
-import '../../services/api_service.dart';
-import '../../models/turma_dto.dart';
-import '../../models/disciplina_dto.dart';
+import '../../../models/usuario_dto.dart';
+import '../../../services/api_service.dart';
+import '../../../models/turma_dto.dart';
+import '../../../models/disciplina_dto.dart';
 
 enum AdminFormObjectType { user, discipline, class_ } // Adicionado class_ (turma)
 

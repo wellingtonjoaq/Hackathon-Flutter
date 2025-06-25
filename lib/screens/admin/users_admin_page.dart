@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/usuario_dto.dart';
-import '../../services/api_service.dart';
+import '../../../models/usuario_dto.dart';
+import '../../../services/api_service.dart';
 import 'admin_object_form_screen.dart';
 
 class UsersAdminPage extends StatefulWidget {

@@ -1,6 +1,5 @@
-// lib/models/turma_dto.dart
 class TurmaDTO {
-  final int? id; // O ID pode ser nulo para novas turmas
+  final int? id;
   final String nome;
   final String periodo;
   final String curso;
@@ -14,7 +13,6 @@ class TurmaDTO {
 
   factory TurmaDTO.fromJson(Map<String, dynamic> json) {
     return TurmaDTO(
-      // Tenta converter para int, ou retorna null se não for possível
       id: json['id'] is int ? json['id'] : (json['id'] != null ? int.tryParse(json['id'].toString()) : null),
       nome: json['nome'] ?? '',
       periodo: json['periodo'] ?? '',

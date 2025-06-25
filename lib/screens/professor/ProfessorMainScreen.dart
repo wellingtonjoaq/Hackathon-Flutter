@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:hackathon_flutter/models/usuario_dto.dart';
 import 'package:hackathon_flutter/services/local_storage_service.dart';
+import 'package:hackathon_flutter/screens/professor/provas_professor_page.dart';
 
-import '../screens/admin/classes_admin_page.dart';
-import '../screens/admin/disciplines_admin_page.dart';
-import '../screens/admin/users_admin_page.dart';
-
-class AdminScreen extends StatefulWidget {
+class ProfessorMainScreen extends StatefulWidget {
   final UsuarioDTO usuario;
 
-  const AdminScreen({super.key, required this.usuario});
+  const ProfessorMainScreen({super.key, required this.usuario});
 
   @override
-  State<AdminScreen> createState() => _AdminScreenState();
+  State<ProfessorMainScreen> createState() => _ProfessorMainScreenState();
 }
 
-class _AdminScreenState extends State<AdminScreen> {
+class _ProfessorMainScreenState extends State<ProfessorMainScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    const UsersAdminPage(),
-    const DisciplinesAdminPage(),
-    const ClassesAdminPage(),
-  ];
+  late List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      ProvasProfessorPage(usuario: widget.usuario),
+      ProfessorMainScreen(usuario: widget.usuario),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.pop(context); // Fecha o drawer após a seleção
+    Navigator.pop(context);
   }
 
   void _logout() async {
@@ -41,7 +43,7 @@ class _AdminScreenState extends State<AdminScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Painel do Administrador',
+          'Painel do Professor',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -84,9 +86,9 @@ class _AdminScreenState extends State<AdminScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.people, color: _selectedIndex == 0 ? Colors.indigo : Colors.grey),
+              leading: Icon(Icons.assignment, color: _selectedIndex == 0 ? Colors.indigo : Colors.grey),
               title: Text(
-                'Usuários',
+                'Minhas Provas',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
@@ -98,9 +100,9 @@ class _AdminScreenState extends State<AdminScreen> {
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
-              leading: Icon(Icons.book, color: _selectedIndex == 1 ? Colors.indigo : Colors.grey),
+              leading: Icon(Icons.book_online, color: _selectedIndex == 1 ? Colors.indigo : Colors.grey),
               title: Text(
-                'Disciplinas',
+                'Minhas Disciplinas',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: _selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
@@ -111,21 +113,7 @@ class _AdminScreenState extends State<AdminScreen> {
               selectedTileColor: Colors.indigo.shade50,
               onTap: () => _onItemTapped(1),
             ),
-            ListTile(
-              leading: Icon(Icons.class_, color: _selectedIndex == 2 ? Colors.indigo : Colors.grey),
-              title: Text(
-                'Turmas',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: _selectedIndex == 2 ? FontWeight.bold : FontWeight.normal,
-                  color: _selectedIndex == 2 ? Colors.indigo : Colors.black87,
-                ),
-              ),
-              selected: _selectedIndex == 2,
-              selectedTileColor: Colors.indigo.shade50,
-              onTap: () => _onItemTapped(2),
-            ),
-            const Divider(), // Divisor antes do logout
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
               title: const Text(
@@ -147,16 +135,12 @@ class _AdminScreenState extends State<AdminScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Usuários',
+            icon: Icon(Icons.assignment),
+            label: 'Provas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Disciplinas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.class_),
-            label: 'Turmas',
           ),
         ],
         currentIndex: _selectedIndex,

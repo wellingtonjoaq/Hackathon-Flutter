@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hackathon_flutter/models/usuario_dto.dart';
-import 'package:hackathon_flutter/widgets/classes_admin_page.dart';
+import 'package:hackathon_flutter/screens/admin/classes_admin_page.dart';
 import 'package:hackathon_flutter/services/local_storage_service.dart';
 
-import '../../widgets/disciplines_admin_page.dart';
-import '../../widgets/users_admin_page.dart';
+import 'disciplines_admin_page.dart';
+import 'users_admin_page.dart';
 
 class AdminScreen extends StatefulWidget {
   final UsuarioDTO usuario;
