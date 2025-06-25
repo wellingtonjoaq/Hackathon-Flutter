@@ -1,12 +1,13 @@
 import 'feedback_questao_dto.dart';
 
 class FeedbackDTO {
-  final int provaId;
+  final int? provaId;
   final String tituloProva;
   final String nomeDisciplina;
   final String nomeTurma;
   final String dataProva;
-  final double notaFinal;
+  final double? notaFinal;
+
   final List<FeedbackQuestaoDTO> questoes;
 
   FeedbackDTO({
@@ -20,16 +21,33 @@ class FeedbackDTO {
   });
 
   factory FeedbackDTO.fromJson(Map<String, dynamic> json) {
+    final int? parsedProvaId = json['provaId'] is int
+        ? json['provaId']
+        : (json['provaId'] is double
+        ? json['provaId']?.toInt()
+        : (json['provaId'] != null ? int.tryParse(json['provaId'].toString()) : null));
+
+    double? parsedNotaFinal;
+    if (json['notaFinal'] is int) {
+      parsedNotaFinal = json['notaFinal'].toDouble();
+    } else if (json['notaFinal'] is double) {
+      parsedNotaFinal = json['notaFinal'];
+    } else if (json['notaFinal'] != null) {
+      parsedNotaFinal = double.tryParse(json['notaFinal'].toString());
+    }
+
+
     return FeedbackDTO(
-      provaId: json['provaId'],
-      tituloProva: json['tituloProva'],
-      nomeDisciplina: json['nomeDisciplina'],
-      nomeTurma: json['nomeTurma'],
-      dataProva: json['dataProva'],
-      notaFinal: json['notaFinal'].toDouble(),
-      questoes: (json['questoes'] as List)
-          .map((e) => FeedbackQuestaoDTO.fromJson(e))
-          .toList(),
+      provaId: parsedProvaId,
+      tituloProva: json['tituloProva'] as String,
+      nomeDisciplina: json['nomeDisciplina'] as String,
+      nomeTurma: json['nomeTurma'] as String,
+      dataProva: json['dataProva'] as String,
+      notaFinal: parsedNotaFinal,
+      questoes: (json['questoes'] as List<dynamic>?)
+          ?.map((e) => FeedbackQuestaoDTO.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+          [],
     );
   }
 }

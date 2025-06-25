@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/aluno_dto.dart';
-import '../services/aluno_service.dart';
+import '../../models/aluno_dto.dart';
+import '../../services/aluno_service.dart';
 
 class SelecionarAlunoScreen extends StatefulWidget {
   const SelecionarAlunoScreen({super.key});

@@ -1,4 +1,3 @@
-// models/feedback_questao_dto.dart
 class FeedbackQuestaoDTO {
   final int numeroQuestao;
   final String respostaDadaAluno;
@@ -14,10 +13,10 @@ class FeedbackQuestaoDTO {
 
   factory FeedbackQuestaoDTO.fromJson(Map<String, dynamic> json) {
     return FeedbackQuestaoDTO(
-      numeroQuestao: json['numeroQuestao'],
-      respostaDadaAluno: json['respostaDadaAluno'],
-      respostaCorreta: json['respostaCorreta'],
-      correta: json['correta'],
+      numeroQuestao: json['numeroQuestao'] as int,
+      respostaDadaAluno: json['respostaDadaAluno'] as String,
+      respostaCorreta: json['respostaCorreta'] as String,
+      correta: json['correta'] as bool,
     );
   }
 }

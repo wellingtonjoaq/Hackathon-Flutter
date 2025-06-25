@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:hackathon_flutter/screens/admin/classes_admin_page.dart';
+import 'package:hackathon_flutter/widgets/classes_admin_page.dart';
 import 'package:http/http.dart' as http;
 import '../models/turma_dto.dart';
 

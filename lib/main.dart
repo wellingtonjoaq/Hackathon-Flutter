@@ -4,10 +4,8 @@ import 'package:hackathon_flutter/screens/aluno/aluno_feedbacks_screen.dart';
 import 'services/local_storage_service.dart';
 import 'models/usuario_dto.dart';
 import 'screens/login_screen.dart';
-import 'screens/admin_screen.dart';
 import 'screens/professor_screen.dart';
 import 'screens/aluno/aluno_screen.dart';
-import 'screens/adicionarProva_screen.dart';
 import 'screens/corrigirProva_screen.dart';
 import 'screens/resultados_screen.dart';
 
@@ -64,11 +62,6 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           home: homeWidget,
 
-          // ✅ Apenas rotas simples aqui
-          routes: {
-            '/login': (_) => const LoginScreen(),
-            '/adicionarProva': (_) => const AdicionarProvaScreen(),
-          },
 
           onGenerateRoute: (settings) {
           final args = settings.arguments;
@@ -91,7 +84,7 @@ class MyApp extends StatelessWidget {
                     builder: (_) => AlunoScreen(usuario: args));
               }
               break;
-            case '/aluno/feedbacks': // <- ADICIONADO
+            case '/aluno/feedbacks':
               if (args is UsuarioDTO) {
                 return MaterialPageRoute(
                     builder: (_) => AlunoFeedbacksScreen(usuario: args));

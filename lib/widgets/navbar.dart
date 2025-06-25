@@ -1,112 +1,169 @@
 import 'package:flutter/material.dart';
+import 'package:hackathon_flutter/models/usuario_dto.dart';
+import 'package:hackathon_flutter/widgets/disciplines_admin_page.dart';
+import 'package:hackathon_flutter/widgets/classes_admin_page.dart';
+import 'package:hackathon_flutter/services/local_storage_service.dart';
+import 'package:hackathon_flutter/widgets/users_admin_page.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    home: UsuariosPage(),
-    debugShowCheckedModeBanner: false,
-  ));
+class AdminScreen extends StatefulWidget {
+  final UsuarioDTO usuario;
+
+  const AdminScreen({super.key, required this.usuario});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
 }
 
-class UsuariosPage extends StatelessWidget {
-  final List<Map<String, String>> usuarios = const [
-    {"id": "01", "nome": "Administrador", "email": "admin@gmail.com"},
-    {"id": "02", "nome": "Professor", "email": "professor@gmail.com"},
-    {"id": "03", "nome": "Aluno", "email": "aluno@gmail.com"},
+class _AdminScreenState extends State<AdminScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const UsersAdminPage(),
+    const DisciplinesAdminPage(),
+    const ClassesAdminPage(),
   ];
 
-  const UsuariosPage({super.key});
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.pop(context); // Fecha o drawer após a seleção
+  }
+
+  void _logout() async {
+    await LocalStorageService().limparUsuario();
+    Navigator.pushReplacementNamed(context, '/login');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hackathon'),
-        backgroundColor: Colors.black,
-        actions: [
-          TextButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.logout, color: Colors.white, size: 20),
-            label: const Text('Logout', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Painel do Administrador',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
+        ),
+        backgroundColor: Colors.indigo,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _logout,
+            tooltip: 'Sair da conta',
+          )
         ],
       ),
       drawer: Drawer(
-        backgroundColor: Colors.black,
         child: ListView(
           padding: EdgeInsets.zero,
-          children: const [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.black87),
-              child: Text(
-                'Painel Administrativo',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(
+                widget.usuario.nome,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+              ),
+              accountEmail: Text(
+                widget.usuario.email,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              currentAccountPicture: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.indigo, size: 40),
+              ),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.indigo, Colors.blueAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.people, color: Colors.white),
-              title: Text('Usuários', style: TextStyle(color: Colors.white)),
+              leading: Icon(Icons.people, color: _selectedIndex == 0 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Usuários',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 0 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 0,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(0),
             ),
             ListTile(
-              leading: Icon(Icons.school, color: Colors.white),
-              title: Text('Turmas', style: TextStyle(color: Colors.white)),
+              leading: Icon(Icons.book, color: _selectedIndex == 1 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Disciplinas',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 1 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 1,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(1),
             ),
             ListTile(
-              leading: Icon(Icons.book, color: Colors.white),
-              title: Text('Disciplinas', style: TextStyle(color: Colors.white)),
+              leading: Icon(Icons.class_, color: _selectedIndex == 2 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Turmas',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 2 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 2 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 2,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(2),
+            ),
+            const Divider(), // Divisor antes do logout
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text(
+                'Sair',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.redAccent),
+              ),
+              onTap: _logout,
             ),
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              headingRowColor: MaterialStateProperty.resolveWith(
-                    (states) => Colors.grey[300],
-              ),
-              columns: const [
-                DataColumn(label: Text('# Id')),
-                DataColumn(label: Text('Usuário')),
-                DataColumn(label: Text('E-mail')),
-                DataColumn(label: Text('Senha')),
-                DataColumn(label: Text('Ações')),
-              ],
-              rows: usuarios.map((usuario) {
-                return DataRow(cells: [
-                  DataCell(Text('# ${usuario["id"]}')),
-                  DataCell(Text(usuario["nome"]!)),
-                  DataCell(Text(usuario["email"]!)),
-                  const DataCell(Text('********')),
-                  DataCell(Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_red_eye, color: Colors.blue),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.orange),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {},
-                      ),
-                    ],
-                  )),
-                ]);
-              }).toList(),
-            ),
-          ),
+      body: Container(
+        color: Colors.grey[100],
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Colors.black,
-        child: const Icon(Icons.add, color: Colors.white),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Usuários',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Disciplinas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.class_),
+            label: 'Turmas',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.indigo,
+        unselectedItemColor: Colors.grey[600],
+        backgroundColor: Colors.white,
+        elevation: 8,
+        onTap: _onItemTapped,
       ),
     );
   }

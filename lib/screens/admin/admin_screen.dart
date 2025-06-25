@@ -1,66 +1,139 @@
-// lib/screens/admin/admin_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:hackathon_flutter/models/usuario_dto.dart';
-import 'package:hackathon_flutter/screens/admin/users_admin_page.dart';
-import 'package:hackathon_flutter/screens/admin/disciplines_admin_page.dart';
-import 'package:hackathon_flutter/screens/admin/classes_admin_page.dart';
+import 'package:hackathon_flutter/widgets/classes_admin_page.dart';
+import 'package:hackathon_flutter/services/local_storage_service.dart';
+
+import '../../widgets/disciplines_admin_page.dart';
+import '../../widgets/users_admin_page.dart';
 
 class AdminScreen extends StatefulWidget {
-  const AdminScreen({super.key, required UsuarioDTO usuario});
+  final UsuarioDTO usuario;
+
+  const AdminScreen({super.key, required this.usuario});
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
 }
 
 class _AdminScreenState extends State<AdminScreen> {
-  int _selectedIndex = 0; // Índice da aba selecionada (0: Usuários, 1: Disciplinas, 2: Turmas)
+  int _selectedIndex = 0;
 
-  // Lista de widgets para cada aba
-  // As instâncias são criadas aqui para que possam ser "cached" ou ter seu estado gerenciado pelo PageView/IndexedStack
   final List<Widget> _pages = [
-    const UsersAdminPage(),      // Conteúdo da aba Usuários
-    const DisciplinesAdminPage(), // Conteúdo da aba Disciplinas
-    const ClassesAdminPage(),     // Conteúdo da aba Turmas
+    const UsersAdminPage(),
+    const DisciplinesAdminPage(),
+    const ClassesAdminPage(),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+    Navigator.pop(context);
+  }
+
+  void _logout() async {
+    await LocalStorageService().limparUsuario();
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Painel do Administrador'),
-        // A cor já será aplicada pelo Theme.of(context).primaryColor se configurado no main.dart
-        // backgroundColor: Theme.of(context).primaryColor, // Remova se já estiver no Theme
-      ),
-      body: IndexedStack( // Use IndexedStack para manter o estado das páginas quando você alterna entre elas
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Usuários',
+        title: const Text(
+          'Painel do Administrador',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Disciplinas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.class_),
-            label: 'Turmas',
-          ),
+        ),
+        backgroundColor: Colors.indigo,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _logout,
+            tooltip: 'Sair da conta',
+          )
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).primaryColor, // Cor do ícone/label selecionado
-        unselectedItemColor: Colors.grey[600], // Cor do ícone/label não selecionado
-        onTap: _onItemTapped,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: Text(
+                widget.usuario.nome,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+              ),
+              accountEmail: Text(
+                widget.usuario.email,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              currentAccountPicture: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.indigo, size: 40),
+              ),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.indigo, Colors.blueAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.people, color: _selectedIndex == 0 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Usuários',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 0 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 0 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 0,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(0),
+            ),
+            ListTile(
+              leading: Icon(Icons.book, color: _selectedIndex == 1 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Disciplinas',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 1 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 1 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 1,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(1),
+            ),
+            ListTile(
+              leading: Icon(Icons.class_, color: _selectedIndex == 2 ? Colors.indigo : Colors.grey),
+              title: Text(
+                'Turmas',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: _selectedIndex == 2 ? FontWeight.bold : FontWeight.normal,
+                  color: _selectedIndex == 2 ? Colors.indigo : Colors.black87,
+                ),
+              ),
+              selected: _selectedIndex == 2,
+              selectedTileColor: Colors.indigo.shade50,
+              onTap: () => _onItemTapped(2),
+            ),
+          ],
+        ),
+      ),
+      body: Container(
+        color: Colors.grey[100],
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
       ),
     );
   }

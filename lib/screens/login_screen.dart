@@ -155,11 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: _limparCampos,
-                          child: const Text('Limpar campos'),
-                        )
                       ],
                     ),
                   ],
