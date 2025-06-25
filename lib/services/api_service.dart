@@ -10,7 +10,7 @@ import '../models/turma_dto.dart';
 import '../models/usuario_dto.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.158:8080';
+  static const String baseUrl = 'http://192.168.3.11:8080';
 
   Future<UsuarioDTO?> login(String email, String senha) async {
     final url = Uri.parse('$baseUrl/api/login');
