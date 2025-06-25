@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hackathon_flutter/screens/admin/admin_screen.dart';
 import 'services/local_storage_service.dart';
 import 'models/usuario_dto.dart';
 import 'screens/login_screen.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
           switch (usuario.perfil.toUpperCase()) {
             case 'ADMINISTRADOR':
               homeWidget = AdminScreen(usuario: usuario);
+
               break;
             case 'PROFESSOR':
               homeWidget = ProfessorScreen(usuario: usuario);

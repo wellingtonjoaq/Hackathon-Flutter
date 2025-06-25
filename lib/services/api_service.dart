@@ -4,7 +4,7 @@ import '../models/usuario_dto.dart';
 
 class ApiService {
   // Altere para o IP do seu servidor local, se necessário
-  static const String baseUrl = 'http://192.168.3.6:8080';
+  static const String baseUrl = 'http://192.168.0.122:8080';
 
   Future<UsuarioDTO?> login(String email, String senha) async {
     final url = Uri.parse('$baseUrl/api/login');

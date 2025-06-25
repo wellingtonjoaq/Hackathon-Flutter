@@ -1,55 +1,30 @@
 import 'package:flutter/material.dart';
 
-class AdicionarUsuarioPage extends StatefulWidget {
+class AdicionarUsuarioPage extends StatelessWidget {
   const AdicionarUsuarioPage({super.key});
 
   @override
-  State<AdicionarUsuarioPage> createState() => _AdicionarUsuarioPageState();
-}
-
-class _AdicionarUsuarioPageState extends State<AdicionarUsuarioPage> {
-  final nomeController = TextEditingController();
-  final emailController = TextEditingController();
-
-  void adicionar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Usuário adicionado (simulado).')),
-    );
-    Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    nomeController.dispose();
-    emailController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final TextEditingController nomeController = TextEditingController();
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Adicionar Usuário'),
-        backgroundColor: Colors.black,
-      ),
+      appBar: AppBar(title: const Text('Adicionar Usuário')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             TextField(
               controller: nomeController,
-              decoration: const InputDecoration(labelText: 'Nome'),
-            ),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: 'E-mail'),
-              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Nome do Usuário'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: adicionar,
-              child: const Text('Adicionar'),
-            )
+              onPressed: () {
+                // TODO: Salvar usuário
+                Navigator.pop(context);
+              },
+              child: const Text('Salvar'),
+            ),
           ],
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/prova_dto.dart';
 
 class ProvaService {
-  final String baseUrl = 'http://localhost:8080/api';
+  final String baseUrl = 'http://192.168.0.122:8080/api';
 
 
 
