@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/aluno_dto.dart';
+import '../models/feedback_dto.dart';
+import '../models/nota_aluno_dto.dart';
 import '../models/usuario_dto.dart';
 
 class ApiService {
-  // Altere para o IP do seu servidor local, se necessário
-  static const String baseUrl = 'http://192.168.0.122:8080';
+  static const String baseUrl = 'http://192.168.3.11:8080';
 
   Future<UsuarioDTO?> login(String email, String senha) async {
     final url = Uri.parse('$baseUrl/api/login');
@@ -41,4 +43,32 @@ class ApiService {
       return null;
     }
   }
+
+  Future<List<NotaAlunoDetalheDTO>> fetchNotasAluno(int alunoId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/aluno/notas/$alunoId'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> body = jsonDecode(response.body);
+      return body.map((e) => NotaAlunoDetalheDTO.fromJson(e)).toList();
+    } else {
+      throw Exception('Falha ao buscar notas do aluno: ${response.statusCode}');
+    }
+  }
+
+  Future<List<FeedbackDTO>> fetchFeedbacksAluno(int alunoId) async {
+    final url = Uri.parse('$baseUrl/api/aluno/$alunoId/feedbacks');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+      return data.map((json) => FeedbackDTO.fromJson(json)).toList();
+    } else {
+      throw Exception('Falha ao carregar feedbacks: ${response.statusCode}');
+    }
+  }
+
 }

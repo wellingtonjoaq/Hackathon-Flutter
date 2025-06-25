@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hackathon_flutter/screens/admin/admin_screen.dart';
+import 'package:hackathon_flutter/screens/aluno/aluno_feedbacks_screen.dart';
 import 'services/local_storage_service.dart';
 import 'models/usuario_dto.dart';
 import 'screens/login_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/professor_screen.dart';
-import 'screens/aluno_screen.dart';
+import 'screens/aluno/aluno_screen.dart';
 import 'screens/adicionarProva_screen.dart';
 import 'screens/corrigirProva_screen.dart';
 import 'screens/resultados_screen.dart';
@@ -69,44 +70,49 @@ class MyApp extends StatelessWidget {
             '/adicionarProva': (_) => const AdicionarProvaScreen(),
           },
 
-          // ✅ Rotas com argumentos aqui
           onGenerateRoute: (settings) {
-            final args = settings.arguments;
-            switch (settings.name) {
-              case '/admin':
-                if (args is UsuarioDTO) {
-                  return MaterialPageRoute(
-                      builder: (_) => AdminScreen(usuario: args));
-                }
-                break;
-              case '/professor':
-                if (args is UsuarioDTO) {
-                  return MaterialPageRoute(
-                      builder: (_) => ProfessorScreen(usuario: args));
-                }
-                break;
-              case '/aluno':
-                if (args is UsuarioDTO) {
-                  return MaterialPageRoute(
-                      builder: (_) => AlunoScreen(usuario: args));
-                }
-                break;
-              case '/corrigirProva':
-                if (args is UsuarioDTO) {
-                  return MaterialPageRoute(
-                      builder: (_) => CorrigirProvaScreen(usuario: args));
-                }
-                break;
-              case '/resultados':
-                if (args is UsuarioDTO) {
-                  return MaterialPageRoute(
-                      builder: (_) => ResultadosScreen(usuario: args));
-                }
-                break;
-            }
-            // Rota padrão
-            return MaterialPageRoute(builder: (_) => const LoginScreen());
-          },
+          final args = settings.arguments;
+          switch (settings.name) {
+            case '/admin':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => AdminScreen(usuario: args));
+              }
+              break;
+            case '/professor':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => ProfessorScreen(usuario: args));
+              }
+              break;
+            case '/aluno':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => AlunoScreen(usuario: args));
+              }
+              break;
+            case '/aluno/feedbacks': // <- ADICIONADO
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => AlunoFeedbacksScreen(usuario: args));
+              }
+              break;
+            case '/corrigirProva':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => CorrigirProvaScreen(usuario: args));
+              }
+              break;
+            case '/resultados':
+              if (args is UsuarioDTO) {
+                return MaterialPageRoute(
+                    builder: (_) => ResultadosScreen(usuario: args));
+              }
+              break;
+          }
+          // Rota padrão
+          return MaterialPageRoute(builder: (_) => const LoginScreen());
+        },
         );
       },
     );
