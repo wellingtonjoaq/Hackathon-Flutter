@@ -6,7 +6,7 @@ import 'screens/admin_screen.dart';
 import 'screens/professor_screen.dart';
 import 'screens/aluno_screen.dart';
 import 'screens/adicionarProva_screen.dart';
-import 'screens/corrigirProva_screen.dart';  // importe essas telas (crie mesmo que vazias)
+import 'screens/corrigirProva_screen.dart';
 import 'screens/resultados_screen.dart';
 
 void main() {
@@ -61,40 +61,44 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           home: homeWidget,
 
-          // Rotas simples que não precisam de argumentos
+          // ✅ Apenas rotas simples aqui
           routes: {
             '/login': (_) => const LoginScreen(),
             '/adicionarProva': (_) => const AdicionarProvaScreen(),
-            // NÃO coloque aqui CorrigirProvaScreen e ResultadosScreen, pois precisam do usuário
           },
 
-          // Rotas com argumentos
+          // ✅ Rotas com argumentos aqui
           onGenerateRoute: (settings) {
             final args = settings.arguments;
             switch (settings.name) {
               case '/admin':
                 if (args is UsuarioDTO) {
-                  return MaterialPageRoute(builder: (_) => AdminScreen(usuario: args));
+                  return MaterialPageRoute(
+                      builder: (_) => AdminScreen(usuario: args));
                 }
                 break;
               case '/professor':
                 if (args is UsuarioDTO) {
-                  return MaterialPageRoute(builder: (_) => ProfessorScreen(usuario: args));
+                  return MaterialPageRoute(
+                      builder: (_) => ProfessorScreen(usuario: args));
                 }
                 break;
               case '/aluno':
                 if (args is UsuarioDTO) {
-                  return MaterialPageRoute(builder: (_) => AlunoScreen(usuario: args));
+                  return MaterialPageRoute(
+                      builder: (_) => AlunoScreen(usuario: args));
                 }
                 break;
               case '/corrigirProva':
                 if (args is UsuarioDTO) {
-                  return MaterialPageRoute(builder: (_) => CorrigirProvaScreen(usuario: args));
+                  return MaterialPageRoute(
+                      builder: (_) => CorrigirProvaScreen(usuario: args));
                 }
                 break;
               case '/resultados':
                 if (args is UsuarioDTO) {
-                  return MaterialPageRoute(builder: (_) => ResultadosScreen(usuario: args));
+                  return MaterialPageRoute(
+                      builder: (_) => ResultadosScreen(usuario: args));
                 }
                 break;
             }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/usuario_dto.dart';
 import '../models/prova_dto.dart';
-import '../models/turma_dto.dart';
 import '../models/aluno_dto.dart';
+import '../models/correcao_dto.dart';
 import '../services/prova_service.dart';
-import '../services/turma_service.dart';
 import '../services/aluno_service.dart';
+import '../services/correcao_service.dart';
 
 class CorrigirProvaScreen extends StatefulWidget {
   final UsuarioDTO usuario;
@@ -17,13 +17,12 @@ class CorrigirProvaScreen extends StatefulWidget {
 }
 
 class _CorrigirProvaScreenState extends State<CorrigirProvaScreen> {
-  List<TurmaDTO> turmas = [];
   List<AlunoDTO> alunos = [];
   List<ProvaDTO> provas = [];
+  List<CorrecaoDTO> correcoes = [];
 
-  TurmaDTO? turmaSelecionada;
   AlunoDTO? alunoSelecionado;
-
+  ProvaDTO? provaSelecionada;
   bool carregando = true;
 
   @override
@@ -34,12 +33,10 @@ class _CorrigirProvaScreenState extends State<CorrigirProvaScreen> {
 
   Future<void> carregarDados() async {
     try {
-      final turmasData = await TurmaService().listarTurmas();
       final alunosData = await AlunoService().listarAlunos();
       final provasData = await ProvaService().listarProvas();
 
       setState(() {
-        turmas = turmasData;
         alunos = alunosData;
         provas = provasData;
         carregando = false;
@@ -52,15 +49,30 @@ class _CorrigirProvaScreenState extends State<CorrigirProvaScreen> {
     }
   }
 
-  List<ProvaDTO> filtrarProvas() {
-    var lista = provas;
-    if (turmaSelecionada != null) {
-      lista = lista.where((p) => p.turmaId == turmaSelecionada!.id).toList();
+  Future<void> filtrarCorrecoes() async {
+    if (alunoSelecionado == null && provaSelecionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selecione ao menos um filtro.')),
+      );
+      return;
     }
-    if (alunoSelecionado != null) {
-      // Aqui você pode filtrar por aluno, se necessário (depende da sua modelagem)
+
+    setState(() => carregando = true);
+    try {
+      final dados = await CorrecaoService().buscarCorrecoes(
+        alunoId: alunoSelecionado?.id,
+        provaId: provaSelecionada?.id,
+      );
+      setState(() {
+        correcoes = dados;
+        carregando = false;
+      });
+    } catch (e) {
+      setState(() => carregando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao filtrar correções: $e')),
+      );
     }
-    return lista;
   }
 
   @override
@@ -70,56 +82,122 @@ class _CorrigirProvaScreenState extends State<CorrigirProvaScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    final provasFiltradas = filtrarProvas();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Corrigir Prova')),
+      appBar: AppBar(
+        title: const Text('Correção de Provas'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Nova Correção',
+            onPressed: () {
+              Navigator.pushNamed(context, '/novaCorrecao');
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            DropdownButton<TurmaDTO>(
-              hint: const Text('Selecione a turma'),
-              value: turmaSelecionada,
-              isExpanded: true,
-              items: turmas
-                  .map((t) => DropdownMenuItem(
-                value: t,
-                child: Text(t.nome),
-              ))
-                  .toList(),
-              onChanged: (v) => setState(() => turmaSelecionada = v),
-            ),
-            const SizedBox(height: 8),
-            DropdownButton<AlunoDTO>(
-              hint: const Text('Selecione o aluno'),
-              value: alunoSelecionado,
-              isExpanded: true,
-              items: alunos
-                  .map((a) => DropdownMenuItem(
-                value: a,
-                child: Text(a.nome),
-              ))
-                  .toList(),
-              onChanged: (v) => setState(() => alunoSelecionado = v),
-            ),
+            Row(children: [
+              Expanded(
+                child: DropdownButtonFormField<AlunoDTO>(
+                  value: alunoSelecionado,
+                  hint: const Text('Selecione o aluno'),
+                  isExpanded: true,
+                  items: alunos
+                      .map((a) =>
+                      DropdownMenuItem(value: a, child: Text(a.nome)))
+                      .toList(),
+                  onChanged: (v) => setState(() => alunoSelecionado = v),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DropdownButtonFormField<ProvaDTO>(
+                  value: provaSelecionada,
+                  hint: const Text('Selecione a prova'),
+                  isExpanded: true,
+                  items: provas
+                      .map((p) =>
+                      DropdownMenuItem(value: p, child: Text(p.titulo)))
+                      .toList(),
+                  onChanged: (v) => setState(() => provaSelecionada = v),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: filtrarCorrecoes,
+                child: const Text('Filtrar'),
+              ),
+            ]),
             const SizedBox(height: 16),
             Expanded(
-              child: provasFiltradas.isEmpty
-                  ? const Center(child: Text('Nenhuma prova encontrada.'))
-                  : ListView.builder(
-                itemCount: provasFiltradas.length,
+              child: correcoes.isEmpty
+                  ? const Center(child: Text('Nenhuma correção encontrada.'))
+                  : ListView.separated(
+                itemCount: correcoes.length,
+                separatorBuilder: (_, __) => const Divider(),
                 itemBuilder: (context, index) {
-                  final prova = provasFiltradas[index];
+                  final correcao = correcoes[index];
                   return ListTile(
-                    title: Text(prova.titulo),
+                    title: Text(
+                        '${correcao.alunoNome} - ${correcao.provaTitulo}'),
                     subtitle: Text(
-                        'Turma ID: ${prova.turmaId}, Data: ${prova.data}'),
-                    onTap: () {
-                      // Navegar para tela de correção de prova, passando prova, aluno selecionado e etc
-                      // Exemplo:
-                      // Navigator.pushNamed(context, '/corrigirProvaDetalhes', arguments: {'prova': prova, 'aluno': alunoSelecionado});
-                    },
+                        'Nota: ${correcao.nota.toStringAsFixed(2)}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/novaCorrecao',
+                              arguments: correcao.id,
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: const Text('Excluir correção'),
+                                content: const Text(
+                                    'Deseja excluir esta correção?'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Cancelar'),
+                                    onPressed: () =>
+                                        Navigator.pop(context),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Excluir'),
+                                    onPressed: () async {
+                                      Navigator.pop(context);
+                                      try {
+                                        await CorrecaoService()
+                                            .excluirCorrecao(
+                                            correcao.id);
+                                        filtrarCorrecoes();
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                            content: Text(
+                                                'Erro ao excluir: $e')));
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),

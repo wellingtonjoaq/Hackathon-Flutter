@@ -15,7 +15,7 @@ class _SelecionarAlunoScreenState extends State<SelecionarAlunoScreen> {
   @override
   void initState() {
     super.initState();
-    _alunosFuture = AlunoService().listarAlunos(); // Busca alunos da API
+    _alunosFuture = AlunoService().listarAlunos();
   }
 
   @override
@@ -41,10 +41,12 @@ class _SelecionarAlunoScreenState extends State<SelecionarAlunoScreen> {
                 final aluno = alunos[index];
                 return ListTile(
                   title: Text(aluno.nome),
-                  subtitle: Text('Matrícula: ${aluno.matricula}'),
                   onTap: () {
-                    // Navega para a tela de responder avaliação passando o aluno selecionado
-                    Navigator.pushNamed(context, '/responderAvaliacao', arguments: aluno);
+                    Navigator.pushNamed(
+                      context,
+                      '/responderAvaliacao',
+                      arguments: aluno,
+                    );
                   },
                 );
               },
@@ -56,8 +58,6 @@ class _SelecionarAlunoScreenState extends State<SelecionarAlunoScreen> {
         onPressed: () async {
           final codigoEscaneado = await Navigator.pushNamed(context, '/scannerAluno');
           if (codigoEscaneado != null && codigoEscaneado is String) {
-            // Aqui você pode buscar o aluno pelo código (matrícula ou ID) retornado do scanner
-            // Por enquanto, vamos só exibir um Snackbar como exemplo
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Código escaneado: $codigoEscaneado')),
             );

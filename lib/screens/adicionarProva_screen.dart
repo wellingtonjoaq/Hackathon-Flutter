@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/turma_dto.dart';
 import '../models/disciplina_dto.dart';
 import '../models/prova_dto.dart';
+import '../models/gabarito_dto.dart';
 import '../services/turma_service.dart';
 import '../services/disciplina_service.dart';
 import '../services/prova_service.dart';
@@ -20,12 +21,17 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
   TurmaDTO? turmaSelecionada;
   DisciplinaDTO? disciplinaSelecionada;
   DateTime? dataProva;
+  int? bimestreSelecionado; // <-- novo campo
 
   List<TurmaDTO> turmas = [];
   List<DisciplinaDTO> disciplinas = [];
 
   bool carregando = true;
   bool salvando = false;
+
+  int? numeroQuestao;
+  String? respostaCorreta;
+  List<Map<String, dynamic>> gabarito = [];
 
   @override
   void initState() {
@@ -37,9 +43,6 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
     try {
       final turmasData = await TurmaService().listarTurmas();
       final disciplinasData = await DisciplinaService().listarDisciplinas();
-
-      print('TURMAS: ${turmasData.map((e) => e.nome).toList()}');
-      print('DISCIPLINAS: ${disciplinasData.map((e) => e.nome).toList()}');
 
       setState(() {
         turmas = turmasData;
@@ -55,10 +58,15 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
   }
 
   Future<void> salvarProva() async {
-    if (!_formKey.currentState!.validate() || dataProva == null) {
+    if (!_formKey.currentState!.validate() || dataProva == null || bimestreSelecionado == null) {
       if (dataProva == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Por favor, selecione a data da prova')),
+        );
+      }
+      if (bimestreSelecionado == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Selecione o bimestre')),
         );
       }
       return;
@@ -70,7 +78,12 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
       titulo: tituloProva!,
       turmaId: turmaSelecionada!.id,
       disciplinaId: disciplinaSelecionada!.id,
-      data: dataProva!.toIso8601String().split('T')[0], // yyyy-MM-dd
+      data: dataProva!.toIso8601String().split('T')[0],
+      bimestre: bimestreSelecionado!, // <-- novo campo
+      gabarito: gabarito.map((q) => GabaritoDTO(
+        numeroQuestao: q['numero'],
+        respostaCorreta: q['resposta'],
+      )).toList(),
     );
 
     setState(() => salvando = true);
@@ -110,7 +123,7 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Nome da Prova'),
                 validator: (value) =>
-                (value == null || value.isEmpty) ? 'Informe o titulo' : null,
+                (value == null || value.isEmpty) ? 'Informe o título' : null,
                 onSaved: (value) => tituloProva = value,
               ),
               const SizedBox(height: 16),
@@ -127,8 +140,7 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
                     turmaSelecionada = value;
                   });
                 },
-                validator: (value) =>
-                value == null ? 'Selecione uma turma' : null,
+                validator: (value) => value == null ? 'Selecione uma turma' : null,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<DisciplinaDTO>(
@@ -144,8 +156,23 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
                     disciplinaSelecionada = value;
                   });
                 },
+                validator: (value) => value == null ? 'Selecione uma disciplina' : null,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<int>(
+                decoration: const InputDecoration(labelText: 'Bimestre'),
+                value: bimestreSelecionado,
+                items: const [
+                  DropdownMenuItem(value: 1, child: Text('1º Bimestre')),
+                  DropdownMenuItem(value: 2, child: Text('2º Bimestre')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    bimestreSelecionado = value;
+                  });
+                },
                 validator: (value) =>
-                value == null ? 'Selecione uma disciplina' : null,
+                value == null ? 'Selecione o bimestre' : null,
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -166,6 +193,63 @@ class _AdicionarProvaScreenState extends State<AdicionarProvaScreen> {
                     });
                   }
                 },
+              ),
+              const SizedBox(height: 24),
+              const Text("Adicionar Questão", style: TextStyle(fontWeight: FontWeight.bold)),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(labelText: 'Nº da Questão'),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) => numeroQuestao = int.tryParse(value),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(labelText: 'Resposta Correta'),
+                      onChanged: (value) => respostaCorreta = value.toUpperCase().trim(),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Adicionar Questão',
+                    onPressed: () {
+                      if (numeroQuestao != null && respostaCorreta != null && respostaCorreta!.isNotEmpty) {
+                        final existe = gabarito.any((g) => g['numero'] == numeroQuestao);
+                        if (!existe) {
+                          setState(() {
+                            gabarito.add({'numero': numeroQuestao, 'resposta': respostaCorreta});
+                            numeroQuestao = null;
+                            respostaCorreta = null;
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Questão já adicionada.')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text("Gabarito", style: TextStyle(fontWeight: FontWeight.bold)),
+              Column(
+                children: gabarito.map((questao) {
+                  return ListTile(
+                    title: Text("Questão ${questao['numero']} - Resposta: ${questao['resposta']}"),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        setState(() {
+                          gabarito.remove(questao);
+                        });
+                      },
+                    ),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 24),
               SizedBox(

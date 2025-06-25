@@ -52,20 +52,17 @@ class ProfessorScreen extends StatelessWidget {
               icon: const Icon(Icons.edit),
               label: const Text('Corrigir Prova'),
               onPressed: () {
-                Navigator.pushNamed(context, '/corrigirProva');
+                Navigator.pushNamed(
+                  context,
+                  '/corrigirProva',
+                  arguments: usuario,
+                );
               },
+
             ),
 
             const SizedBox(height: 16),
 
-            // Botão para Ver Resultados
-            ElevatedButton.icon(
-              icon: const Icon(Icons.bar_chart),
-              label: const Text('Ver Resultados'),
-              onPressed: () {
-                Navigator.pushNamed(context, '/resultados');
-              },
-            ),
           ],
         ),
       ),
